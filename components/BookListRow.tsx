@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Book } from '../types';
-import { BookOpen, Calendar, Globe } from 'lucide-react';
+import { ChevronRight, Globe } from 'lucide-react';
 
 interface BookListRowProps {
   book: Book;
@@ -36,20 +36,20 @@ const BookListRow: React.FC<BookListRowProps> = ({ book, onClick }) => {
         <p className="text-xs text-gray-500 font-medium">by {book.author}</p>
       </div>
 
-      <div className="hidden md:flex items-center gap-6 shrink-0 text-emerald-800/40">
+      <div className="hidden md:flex items-center gap-8 shrink-0 text-emerald-800/40">
+        <div className="flex flex-col items-end">
+          <span className="text-[9px] uppercase font-bold tracking-widest">Est. Value</span>
+          <span className="text-sm font-bold text-emerald-900">£{book.price.toFixed(2)}</span>
+        </div>
         <div className="flex items-center gap-1.5">
           <Globe className="w-3.5 h-3.5" />
           <span className="text-xs font-semibold">{book.language.split('/')[0]}</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <Calendar className="w-3.5 h-3.5" />
-          <span className="text-xs font-semibold">{Math.floor(book.year / 100) + 1}th c.</span>
-        </div>
       </div>
 
-      <button className="shrink-0 p-2 text-emerald-700 hover:text-emerald-900 transition-colors">
-        <BookOpen className="w-5 h-5" />
-      </button>
+      <div className="shrink-0 p-3 text-emerald-200 group-hover:text-emerald-600 transition-colors">
+        <ChevronRight className="w-5 h-5" />
+      </div>
     </div>
   );
 };

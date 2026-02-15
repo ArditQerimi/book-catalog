@@ -13,13 +13,20 @@ export interface Book {
   pages: number;
   language: string;
   publisher: string;
+  price: number;
 }
 
 export type Category = 'All' | 'Philosophy' | 'Theology' | 'History' | 'Literature' | 'Science' | 'Art';
 
+export interface GroundingSource {
+  title: string;
+  uri: string;
+}
+
 export interface SearchResult {
   books: Book[];
   explanation?: string;
+  sources?: GroundingSource[];
 }
 
 export type SortOption = 'Oldest' | 'Newest' | 'Title A-Z';
@@ -28,7 +35,8 @@ export interface FilterState {
   category: Category;
   century: string;
   language: string;
+  theme: string;
 }
 
 export type ViewMode = 'grid' | 'list';
-export type ActivePage = 'archive' | 'scholars' | 'history' | 'about';
+export type ActivePage = 'archive' | 'scholars' | 'history' | 'about' | 'admin' | 'login';
