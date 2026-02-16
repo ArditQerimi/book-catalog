@@ -59,7 +59,7 @@ const App: React.FC = () => {
     <div className="min-h-screen relative islamic-pattern text-gray-800 selection:bg-emerald-100 selection:text-emerald-900 overflow-x-hidden">
       <GeometricOverlay />
 
-      <Navbar 
+      <Navbar
         currentPath={location.pathname}
         isLoading={isLoading}
         isAuthenticated={isAuthenticated}
@@ -107,20 +107,24 @@ const App: React.FC = () => {
           <Route path="/admin" element={
             isAuthenticated ? <AdminPage books={books} onRefresh={fetchInitialData} /> : (
               <div className="py-40 text-center animate-in fade-in duration-700">
-                 <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><Database className="w-10 h-10 text-emerald-800 animate-pulse" /></div>
-                 <h3 className="text-4xl font-bold text-emerald-900 italic mb-4 uppercase tracking-tighter opacity-10">Restricted Area</h3>
-                 <p className="text-emerald-800/40 font-bold tracking-widest text-xs uppercase italic">Verifying credentials via Nur Middleware...</p>
+                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6"><Database className="w-10 h-10 text-emerald-800 animate-pulse" /></div>
+                <h3 className="text-4xl font-bold text-emerald-900 italic mb-4 uppercase tracking-tighter opacity-10">Restricted Area</h3>
+                <p className="text-emerald-800/40 font-bold tracking-widest text-xs uppercase italic">Verifying credentials via Nur Middleware...</p>
               </div>
             )
           } />
-          {['scholars', 'history'].map(path => (
-            <Route key={path} path={`/${path}`} element={
-              <div className="py-40 text-center animate-in fade-in duration-700">
-                 <h3 className="text-4xl font-bold text-emerald-900 italic mb-4 uppercase tracking-tighter opacity-10 uppercase">{path} Locked</h3>
-                 <p className="text-emerald-800/40 font-bold tracking-widest text-xs">AWAITING MANUSCRIPT UNLOCK</p>
-              </div>
-            } />
-          ))}
+          <Route path="/scholars" element={
+            <div className="py-40 text-center animate-in fade-in duration-700">
+              <h3 className="text-4xl font-bold text-emerald-900 italic mb-4 uppercase tracking-tighter opacity-10">Scholars Locked</h3>
+              <p className="text-emerald-800/40 font-bold tracking-widest text-xs">AWAITING MANUSCRIPT UNLOCK</p>
+            </div>
+          } />
+          <Route path="/history" element={
+            <div className="py-40 text-center animate-in fade-in duration-700">
+              <h3 className="text-4xl font-bold text-emerald-900 italic mb-4 uppercase tracking-tighter opacity-10">History Locked</h3>
+              <p className="text-emerald-800/40 font-bold tracking-widest text-xs">AWAITING MANUSCRIPT UNLOCK</p>
+            </div>
+          } />
         </Routes>
       </main>
 

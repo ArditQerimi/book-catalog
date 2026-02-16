@@ -1,8 +1,9 @@
 
-import { pgTable, text, integer, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, varchar, numeric } from "drizzle-orm/pg-core";
+
 
 export const books = pgTable("books", {
-  id: varchar("id", { length: 255 }).primaryKey(),
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
   title: text("title").notNull(),
   author: text("author").notNull(),
   category: varchar("category", { length: 100 }).notNull(),
@@ -14,8 +15,70 @@ export const books = pgTable("books", {
   pages: integer("pages").notNull(),
   language: varchar("language", { length: 100 }).notNull(),
   publisher: varchar("publisher", { length: 255 }).notNull(),
+  price: numeric("price", { precision: 10, scale: 2 }).notNull().default("0"),
+  themes: text("themes").array().notNull().default([]),
+  userId: varchar("user_id", { length: 255 }).references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const users = pgTable("users", {
+  id: varchar("id", { length: 255 }).primaryKey().$default(() => crypto.randomUUID()),
+  username: varchar("username", { length: 100 }).notNull().unique(),
+  password: text("password").notNull(),
+  role: varchar("role", { length: 50 }).notNull().default('user'),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const scholars = pgTable("scholars", {
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull(),
+  title: text("title").notNull(),
+  period: varchar("period", { length: 255 }).notNull(),
+  bio: text("bio").notNull(),
+  image: text("image").notNull(),
+  specialization: text("specialization").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const historyEvents = pgTable("history_events", {
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  period: varchar("period", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  image: text("image"),
+  type: varchar("type", { length: 50 }).notNull(), // 'era', 'event', 'achievement'
+  order: integer("order").notNull().default(0),
+});
+
+export const categories = pgTable("categories", {
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const authorsInfo = pgTable("authors_info", {
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: text("name").notNull().unique(),
+  bio: text("bio"),
+  image: text("image"),
+  deathYear: integer("death_year"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const languages = pgTable("languages", {
+  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
+  name: varchar("name", { length: 100 }).notNull().unique(),
+  code: varchar("code", { length: 10 }),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
 export type Book = typeof books.$inferSelect;
 export type NewBook = typeof books.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+export type Scholar = typeof scholars.$inferSelect;
+export type HistoryEvent = typeof historyEvents.$inferSelect;
+export type Category = typeof categories.$inferSelect;
+export type AuthorInfo = typeof authorsInfo.$inferSelect;
+export type Language = typeof languages.$inferSelect;

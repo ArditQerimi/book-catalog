@@ -2,7 +2,7 @@
 import { db } from '../lib/db';
 import { books, users } from '../schema';
 import { MOCK_BOOKS } from '../constants';
-import bcrypt from 'bcrypt';
+import * as bcrypt from 'bcrypt';
 
 async function seed() {
   console.log('Seeding database...');
@@ -11,9 +11,8 @@ async function seed() {
   for (const book of MOCK_BOOKS) {
     await db.insert(books).values({
       ...book,
-      id: undefined, // Let DB generate UUID
-      price: Math.floor(book.price), // Ensure integer for price as per schema
-      themes: book.themes,
+      price: book.price.toString(),
+      themes: book.themes || [],
     }).onConflictDoNothing();
   }
 

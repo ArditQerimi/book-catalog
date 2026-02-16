@@ -1,3 +1,13 @@
+# Next.js
+.next/
+out/
+build/
+
+# Production
+.env
+.env.production
+.env.local
+
 # Logs
 logs
 *.log

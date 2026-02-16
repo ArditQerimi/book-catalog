@@ -13,7 +13,7 @@ export interface Book {
   pages: number;
   language: string;
   publisher: string;
-  price: number;
+  price: string;
 }
 
 export type Category = 'All' | 'Philosophy' | 'Theology' | 'History' | 'Literature' | 'Science' | 'Art';

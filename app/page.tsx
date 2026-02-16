@@ -1,10 +1,14 @@
+import { getBooksAction } from "@/lib/actions";
+import ArchiveContainer from "@/app/components/ArchiveContainer";
 
-import { getBooksAction } from '@/lib/actions';
-import HomePageClient from '@/components/HomePageClient';
-
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const books = await getBooksAction();
-  return <HomePageClient books={books} />;
+    const books = await getBooksAction();
+
+    return (
+        <div className="w-full">
+            <ArchiveContainer initialBooks={books as any} />
+        </div>
+    );
 }
