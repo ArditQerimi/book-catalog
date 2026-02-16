@@ -1,61 +1,40 @@
+import { db } from "./db";
+import { users } from "../schema";
+import { eq } from "drizzle-orm";
+import { cookies as nextCookies } from "next/headers";
+import { SignJWT, jwtVerify } from "jose";
 
-import { SignJWT, jwtVerify } from 'jose';
-import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
-
-const secretKey = process.env.NEXTAUTH_SECRET || 'secret';
-const key = new TextEncoder().encode(secretKey);
+const COOKIE_NAME = 'nur_session';
+const SECRET_KEY = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback_secret_for_development_only");
 
 export async function encrypt(payload: any) {
-  return await new SignJWT(payload)
-    .setProtectedHeader({ alg: 'HS256' })
-    .setIssuedAt()
-    .setExpirationTime('1h')
-    .sign(key);
+    return await new SignJWT(payload)
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("7d")
+        .sign(SECRET_KEY);
 }
 
 export async function decrypt(input: string): Promise<any> {
-  const { payload } = await jwtVerify(input, key, {
-    algorithms: ['HS256'],
-  });
-  return payload;
+    const { payload } = await jwtVerify(input, SECRET_KEY, {
+        algorithms: ["HS256"],
+    });
+    return payload;
 }
 
-export async function login(formData: FormData) {
-  // Verify credentials against DB
-  // Create the session
-  const user = { email: formData.get('email'), name: 'John' };
-  const expires = new Date(Date.now() + 10 * 1000);
-  const session = await encrypt({ user, expires });
+export async function verifySession() {
+    const cookieStore = await nextCookies();
+    const session = cookieStore.get(COOKIE_NAME);
 
-  // Save the session in a cookie
-  cookies().set('session', session, { expires, httpOnly: true });
-}
+    if (!session?.value) return null;
 
-export async function logout() {
-  // Destroy the session
-  cookies().set('session', '', { expires: new Date(0) });
-}
+    try {
+        const payload = await decrypt(session.value);
+        if (!payload || !payload.userId) return null;
 
-export async function getSession() {
-  const session = cookies().get('session')?.value;
-  if (!session) return null;
-  return await decrypt(session);
-}
-
-export async function updateSession(request: NextRequest) {
-  const session = request.cookies.get('session')?.value;
-  if (!session) return;
-
-  // Refresh the session so it doesn't expire
-  const parsed = await decrypt(session);
-  parsed.expires = new Date(Date.now() + 10 * 1000);
-  const res = NextResponse.next();
-  res.cookies.set({
-    name: 'session',
-    value: await encrypt(parsed),
-    httpOnly: true,
-    expires: parsed.expires,
-  });
-  return res;
+        const [admin] = await db.select().from(users).where(eq(users.id, payload.userId as string)).limit(1);
+        return admin || null;
+    } catch (err) {
+        return null;
+    }
 }
