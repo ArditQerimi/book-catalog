@@ -28,13 +28,23 @@ export default async function ScholarsPage() {
                 ) : (
                     allScholars.map((scholar) => (
                         <div key={scholar.id} className="group relative bg-white rounded-3xl overflow-hidden shadow-xl shadow-emerald-900/5 hover:shadow-2xl hover:shadow-emerald-900/10 transition-all duration-500 hover:-translate-y-2 border border-emerald-50">
-                            <div className="h-72 relative overflow-hidden">
-                                <img
-                                    src={scholar.image}
-                                    alt={scholar.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
+                            <div className="h-72 relative overflow-hidden bg-emerald-100 flex items-center justify-center">
+                                {scholar.image ? (
+                                    <Image
+                                        src={scholar.image}
+                                        alt={scholar.name}
+                                        fill
+                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-800 to-emerald-900 flex items-center justify-center">
+                                        <span className="text-4xl font-serif text-emerald-100/30 select-none">
+                                            {scholar.name.charAt(0)}
+                                        </span>
+                                    </div>
+                                )}
                                 <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/80 via-transparent to-transparent opacity-60" />
+
                                 <div className="absolute bottom-6 left-6 right-6">
                                     <span className="px-3 py-1 bg-emerald-100/20 backdrop-blur-md text-emerald-50 rounded-full text-xs font-medium uppercase tracking-wider border border-white/20">
                                         {scholar.period}

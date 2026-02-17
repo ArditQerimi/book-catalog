@@ -4,6 +4,8 @@ import * as React from 'react';
 import Link from 'next/link';
 import { Book } from '@/types';
 import { ChevronRight, Globe } from 'lucide-react';
+import Image from 'next/image';
+
 
 interface BookListRowProps {
   book: Book;
@@ -16,13 +18,19 @@ const BookListRow: React.FC<BookListRowProps> = ({ book }: { book: Book }) => {
       className="group cursor-pointer bg-white/60 backdrop-blur-sm p-4 rounded-2xl border border-emerald-50 hover:bg-white hover:shadow-lg hover:shadow-emerald-900/5 transition-all duration-300 flex items-center gap-6"
     >
       <div className="w-16 h-20 shrink-0 overflow-hidden rounded-lg bg-emerald-50 relative">
-        <img
-          src={book.coverImage}
-          alt={book.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-        />
+        {book.coverImage ? (
+          <Image
+            src={book.coverImage}
+            alt={book.title}
+            fill
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-emerald-100" />
+        )}
         <div className="absolute inset-0 bg-emerald-900/10 group-hover:bg-transparent" />
       </div>
+
 
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
@@ -40,7 +48,7 @@ const BookListRow: React.FC<BookListRowProps> = ({ book }: { book: Book }) => {
       <div className="hidden md:flex items-center gap-8 shrink-0 text-emerald-800/40">
         <div className="flex flex-col items-end">
           <span className="text-[9px] uppercase font-bold tracking-widest">Est. Value</span>
-          <span className="text-sm font-bold text-emerald-900">€{Number(book.price).toFixed(2)}</span>
+          <span className="text-sm font-bold text-emerald-900">£{Number(book.price).toFixed(2)}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Globe className="w-3.5 h-3.5" />

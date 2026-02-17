@@ -5,6 +5,8 @@ import { X, Upload, Sparkles, Book as BookIcon, User, Calendar, Tag, Languages }
 import { createBookAction, updateBookAction, uploadImageAction } from '@/lib/actions';
 import { Book } from '@/types';
 import { Category, AuthorInfo, Language } from '@/schema';
+import Image from 'next/image';
+
 
 interface BookFormModalProps {
     isOpen: boolean;
@@ -112,8 +114,9 @@ const BookFormModal: React.FC<BookFormModalProps> = ({
 
                     <div className="relative z-10 mt-8 aspect-[2/3] bg-emerald-800/50 rounded-2xl border-2 border-dashed border-emerald-700 flex items-center justify-center overflow-hidden group">
                         {preview ? (
-                            <img src={preview} className="w-full h-full object-cover" alt="Preview" />
+                            <Image src={preview} fill className="object-cover" alt="Preview" unoptimized={preview.startsWith('data:')} />
                         ) : (
+
                             <div className="text-center p-4">
                                 <Upload className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
                                 <p className="text-[10px] uppercase font-bold text-emerald-500 tracking-widest">Upload Cover</p>

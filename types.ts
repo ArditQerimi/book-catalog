@@ -14,6 +14,7 @@ export interface Book {
   language: string;
   publisher: string;
   price: string;
+  inStock: boolean;
 }
 
 export type Category = 'All' | 'Philosophy' | 'Theology' | 'History' | 'Literature' | 'Science' | 'Art';

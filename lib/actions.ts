@@ -102,6 +102,7 @@ export async function createBookAction(formData: FormData): Promise<{ success: b
       language: "English / Arabic",
       publisher: "Nur Digital Press",
       price: (Math.floor(Math.random() * 50) + 15).toString(),
+      inStock: true,
       userId: user.id
     } as any).returning();
 
@@ -155,6 +156,27 @@ export async function deleteBookAction(id: string): Promise<boolean> {
 
   await db.delete(books).where(eq(books.id, id));
   return true;
+}
+
+export async function updateBookDetailsAction(
+  id: string,
+  data: { description?: string; price?: string; inStock?: boolean }
+): Promise<{ success: boolean; error?: string }> {
+  const user = await verifySession();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  try {
+    const updateData: Record<string, any> = {};
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.price !== undefined) updateData.price = data.price;
+    if (data.inStock !== undefined) updateData.inStock = data.inStock;
+
+    await db.update(books).set(updateData).where(eq(books.id, id));
+    return { success: true };
+  } catch (err) {
+    console.error(err);
+    return { success: false, error: "Failed to update book details." };
+  }
 }
 
 export async function uploadImageAction(formData: FormData): Promise<{ success: boolean; url?: string; error?: string }> {

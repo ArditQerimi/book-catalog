@@ -1,12 +1,15 @@
 
 import { getBooksAction } from "@/lib/actions";
-import { ArrowLeft, Info, Scroll, Layers, Tag, Library, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, XCircle } from 'lucide-react';
 import { Book } from '@/types';
 import ThemePills from '@/app/components/ThemePills';
-import IconWrapper from '@/app/components/IconWrapper';
 import BookCard from '@/app/components/BookCard';
+import BookDetailEditor from '@/app/components/BookDetailEditor';
 import Link from 'next/link';
 import { notFound } from "next/navigation";
+import { verifySession } from "@/lib/actions";
+import Image from 'next/image';
+
 
 export const revalidate = 60;
 
@@ -25,6 +28,8 @@ export default async function BookPage({ params }: BookPageProps) {
     const { id } = await params;
     const books = await getBooksAction();
     const book = books.find(b => b.id === id);
+    const session = await verifySession();
+    const isAdmin = !!session;
 
     if (!book) {
         notFound();
@@ -51,19 +56,28 @@ export default async function BookPage({ params }: BookPageProps) {
             {/* Main Two Column Layout */}
             <div className="flex flex-col lg:flex-row gap-16 mb-24">
 
-                {/* Left Column: Cover Image (Floating Style) */}
+                {/* Left Column: Cover Image */}
                 <div className="w-full lg:w-1/3 shrink-0">
                     <div className="sticky top-28 bg-white p-8 rounded shadow-sm border border-emerald-50 text-center max-w-xs mx-auto lg:max-w-none">
-                        <div className="relative aspect-[2/3] w-full shadow-2xl rounded-none overflow-hidden">
-                            <img
-                                src={book.coverImage}
-                                alt={book.title}
-                                className="absolute inset-0 w-full h-full object-cover"
-                            />
+                        <div className="relative aspect-[2/3] w-full shadow-2xl rounded-none overflow-hidden bg-emerald-50">
+                            {book.coverImage ? (
+                                <Image
+                                    src={book.coverImage}
+                                    alt={book.title}
+                                    fill
+                                    priority
+                                    className="object-cover"
+                                />
+                            ) : (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <span className="text-emerald-900/20 font-serif text-2xl italic">No Cover</span>
+                                </div>
+                            )}
                         </div>
 
+
                         {/* Title and Author under Image */}
-                        <div className="mt-8 text-center text-left lg:text-center">
+                        <div className="mt-8 text-center">
                             <h1 className="text-3xl font-bold text-emerald-950 italic mb-2 leading-tight">
                                 {book.title}
                             </h1>
@@ -79,7 +93,6 @@ export default async function BookPage({ params }: BookPageProps) {
 
                 {/* Right Column: Metadata & Content */}
                 <div className="flex-1 min-w-0">
-                    {/* Header */}
                     {/* Header: Book Description */}
                     <div className="mb-6 border-b border-emerald-100 pb-2">
                         <h3 className="text-xl font-bold uppercase tracking-widest text-emerald-900 mb-2">Book Description</h3>
@@ -101,7 +114,7 @@ export default async function BookPage({ params }: BookPageProps) {
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest mb-1">Language</span>
-                            <span className="font-semibold text-emerald-900 text-emerald-600">{book.language.split('/')[0]}</span>
+                            <span className="font-semibold text-emerald-600">{book.language.split('/')[0]}</span>
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest mb-1">Pages</span>
@@ -113,7 +126,19 @@ export default async function BookPage({ params }: BookPageProps) {
                         </div>
                         <div>
                             <span className="block text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest mb-1">Price</span>
-                            <span className="font-semibold text-emerald-900 text-lg">€{Number(book.price).toFixed(2)}</span>
+                            <span className="font-semibold text-emerald-900 text-lg">£{Number(book.price).toFixed(2)}</span>
+                        </div>
+                        <div>
+                            <span className="block text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest mb-1">Availability</span>
+                            {book.inStock ? (
+                                <span className="inline-flex items-center gap-1 text-emerald-600 font-semibold">
+                                    <CheckCircle2 className="w-4 h-4" /> In Stock
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 text-red-500 font-semibold">
+                                    <XCircle className="w-4 h-4" /> Out of Stock
+                                </span>
+                            )}
                         </div>
                     </div>
 
@@ -131,6 +156,16 @@ export default async function BookPage({ params }: BookPageProps) {
                         <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-800/50 mb-3">Historical Context</h3>
                         <p className="text-emerald-900 italic font-serif">"{book.historicalContext}"</p>
                     </div>
+
+                    {/* Admin Inline Editor */}
+                    {isAdmin && (
+                        <BookDetailEditor
+                            bookId={book.id}
+                            initialDescription={book.description}
+                            initialPrice={book.price}
+                            initialInStock={book.inStock}
+                        />
+                    )}
 
                 </div>
             </div>

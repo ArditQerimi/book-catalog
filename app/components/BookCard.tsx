@@ -1,6 +1,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Book } from '@/types';
+import Image from 'next/image';
+
 
 interface BookCardProps {
   book: Book;
@@ -14,13 +16,21 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
       className="group cursor-pointer bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-emerald-50/50 flex flex-col h-full"
     >
       <div className="relative h-72 overflow-hidden bg-emerald-50">
-        <img
-          src={book.coverImage}
-          alt={book.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-        />
+        {book.coverImage ? (
+          <Image
+            src={book.coverImage}
+            alt={book.title}
+            fill
+            className="object-cover transition-transform duration-700 group-hover:scale-110"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-emerald-100 flex items-center justify-center">
+            <span className="text-emerald-900/20 font-serif">No Cover</span>
+          </div>
+        )}
         <div className="absolute inset-0 bg-emerald-900/10 group-hover:bg-transparent transition-colors duration-500" />
       </div>
+
       <div className="p-5 flex flex-col flex-1">
         <span className="text-[10px] uppercase tracking-widest text-emerald-600 font-bold mb-1 block">
           {book.category}
@@ -36,7 +46,7 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
             <span className="text-xs text-emerald-900 font-bold">{book.year} CE</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-lg font-bold text-emerald-900 italic">€{Number(book.price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-emerald-900 italic">£{Number(book.price).toFixed(2)}</span>
           </div>
         </div>
       </div>

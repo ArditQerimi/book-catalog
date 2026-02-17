@@ -22,6 +22,8 @@ import {
 import BookFormModal from './BookFormModal';
 import { useRouter } from 'next/navigation';
 import { Category, AuthorInfo, Language } from '@/schema';
+import Image from 'next/image';
+
 
 interface AdminContainerProps {
     initialBooks: Book[];
@@ -149,9 +151,14 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
                                         <tr key={book.id} className="hover:bg-emerald-50/20 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="w-12 h-16 rounded-lg bg-emerald-100 overflow-hidden shrink-0 border border-emerald-200">
-                                                        <img src={book.coverImage} className="w-full h-full object-cover" alt="" />
+                                                    <div className="w-12 h-16 rounded-lg bg-emerald-100 overflow-hidden shrink-0 border border-emerald-200 relative">
+                                                        {book.coverImage ? (
+                                                            <Image src={book.coverImage} fill className="object-cover" alt={book.title} />
+                                                        ) : (
+                                                            <div className="absolute inset-0 bg-emerald-100" />
+                                                        )}
                                                     </div>
+
                                                     <div>
                                                         <p className="text-sm font-bold text-emerald-950 italic line-clamp-1">{book.title}</p>
                                                         <p className="text-xs text-emerald-700/60 font-medium">by {book.author}</p>
@@ -300,9 +307,16 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {initialAuthors.map(author => (
                                 <div key={author.id} className="p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100 relative group flex gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-emerald-200 overflow-hidden shrink-0">
-                                        {author.image && <img src={author.image} className="w-full h-full object-cover" />}
+                                    <div className="w-12 h-12 rounded-full bg-emerald-200 overflow-hidden shrink-0 relative">
+                                        {author.image ? (
+                                            <Image src={author.image} fill className="object-cover" alt={author.name} />
+                                        ) : (
+                                            <div className="absolute inset-0 bg-emerald-200 flex items-center justify-center text-emerald-800 text-[10px] font-bold">
+                                                {author.name.charAt(0)}
+                                            </div>
+                                        )}
                                     </div>
+
                                     <div className="flex-1">
                                         <h4 className="text-lg font-bold text-emerald-900">{author.name}</h4>
                                         <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mb-2">{author.deathYear ? `Died ${author.deathYear} CE` : 'Death date unknown'}</p>

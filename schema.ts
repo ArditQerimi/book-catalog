@@ -1,5 +1,5 @@
 
-import { pgTable, text, integer, timestamp, varchar, numeric } from "drizzle-orm/pg-core";
+import { pgTable, text, integer, timestamp, varchar, numeric, boolean } from "drizzle-orm/pg-core";
 
 
 export const books = pgTable("books", {
@@ -16,6 +16,7 @@ export const books = pgTable("books", {
   language: varchar("language", { length: 100 }).notNull(),
   publisher: varchar("publisher", { length: 255 }).notNull(),
   price: numeric("price", { precision: 10, scale: 2 }).notNull().default("0"),
+  inStock: boolean("in_stock").notNull().default(true),
   themes: text("themes").array().notNull().default([]),
   userId: varchar("user_id", { length: 255 }).references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
@@ -31,7 +32,8 @@ export const users = pgTable("users", {
 
 export const scholars = pgTable("scholars", {
   id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
-  name: text("name").notNull(),
+  name: text("name").notNull().unique(),
+
   title: text("title").notNull(),
   period: varchar("period", { length: 255 }).notNull(),
   bio: text("bio").notNull(),

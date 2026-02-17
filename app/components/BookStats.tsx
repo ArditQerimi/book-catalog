@@ -22,7 +22,7 @@ const BookStats: React.FC<BookStatsProps> = ({ year, pages, language, price }) =
       <StatItem label="Era" value={`${year} CE`} />
       <StatItem label="Extent" value={`${pages} Pages`} />
       <StatItem label="Medium" value={language.split('/')[0]} />
-      <StatItem label="Price" value={price ? `€${Number(price).toFixed(2)}` : 'N/A'} />
+      <StatItem label="Price" value={price ? `£${Number(price).toFixed(2)}` : 'N/A'} />
     </div>
   );
 };
