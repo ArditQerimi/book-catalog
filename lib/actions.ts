@@ -10,7 +10,7 @@ import { Book } from "../types";
 import * as bcrypt from "bcrypt";
 import { verifySession, encrypt } from './auth';
 export { verifySession };
-import { uploadImage } from "./cloudinary";
+import { uploadToSupabase, deleteFromSupabase } from "./supabase-storage";
 
 const COOKIE_NAME = 'nur_session';
 
@@ -148,6 +148,11 @@ export async function deleteBookAction(id: string): Promise<boolean> {
   const user = await verifySession();
   if (!user) return false;
 
+  const [book] = await db.select().from(books).where(eq(books.id, id)).limit(1);
+  if (book?.coverImage && book.coverImage.includes('supabase.co')) {
+    await deleteFromSupabase(book.coverImage);
+  }
+
   await db.delete(books).where(eq(books.id, id));
   return true;
 }
@@ -159,19 +164,7 @@ export async function uploadImageAction(formData: FormData): Promise<{ success: 
   const file = formData.get('file') as File;
   if (!file) return { success: false, error: "No file provided" };
 
-  try {
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    // Convert to base64 for Cloudinary
-    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
-    const url = await uploadImage(base64Image);
-
-    return { success: true, url };
-  } catch (err) {
-    console.error(err);
-    return { success: false, error: "Failed to upload image to the celestial cloud." };
-  }
+  return await uploadToSupabase(file);
 }
 
 // --- CATEGORY ACTIONS ---
@@ -191,6 +184,21 @@ export async function createCategoryAction(formData: FormData) {
     return { success: true };
   } catch (err) {
     return { success: false, error: "Failed to create category." };
+  }
+}
+
+export async function updateCategoryAction(id: string, formData: FormData) {
+  const user = await verifySession();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const name = formData.get('name') as string;
+  const description = formData.get('description') as string;
+
+  try {
+    await db.update(categories).set({ name, description }).where(eq(categories.id, id));
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: "Failed to update category." };
   }
 }
 
@@ -222,9 +230,39 @@ export async function createAuthorInfoAction(formData: FormData) {
   }
 }
 
+export async function updateAuthorInfoAction(id: string, formData: FormData) {
+  const user = await verifySession();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const name = formData.get('name') as string;
+  const bio = formData.get('bio') as string;
+  const image = formData.get('image') as string;
+  const deathYear = formData.get('deathYear') ? parseInt(formData.get('deathYear') as string) : null;
+
+  try {
+    const [oldAuthor] = await db.select().from(authorsInfo).where(eq(authorsInfo.id, id)).limit(1);
+
+    // Cleanup old image if we are setting a new one
+    if (image && oldAuthor?.image && oldAuthor.image !== image && oldAuthor.image.includes('supabase.co')) {
+      await deleteFromSupabase(oldAuthor.image);
+    }
+
+    await db.update(authorsInfo).set({ name, bio, image, deathYear }).where(eq(authorsInfo.id, id));
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: "Failed to update author." };
+  }
+}
+
 export async function deleteAuthorInfoAction(id: string) {
   const user = await verifySession();
   if (!user) return { success: false };
+
+  const [author] = await db.select().from(authorsInfo).where(eq(authorsInfo.id, id)).limit(1);
+  if (author?.image && author.image.includes('supabase.co')) {
+    await deleteFromSupabase(author.image);
+  }
+
   await db.delete(authorsInfo).where(eq(authorsInfo.id, id));
   return { success: true };
 }
@@ -246,6 +284,21 @@ export async function createLanguageAction(formData: FormData) {
     return { success: true };
   } catch (err) {
     return { success: false, error: "Failed to create language." };
+  }
+}
+
+export async function updateLanguageAction(id: string, formData: FormData) {
+  const user = await verifySession();
+  if (!user) return { success: false, error: "Unauthorized" };
+
+  const name = formData.get('name') as string;
+  const code = formData.get('code') as string;
+
+  try {
+    await db.update(languages).set({ name, code }).where(eq(languages.id, id));
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: "Failed to update language." };
   }
 }
 

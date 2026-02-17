@@ -42,7 +42,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, user }) => {
                 </Link>
 
                 <div className="hidden md:flex items-center gap-8">
-                    {['Archive', 'Scholars', 'History'].map(label => {
+                    {['Archive', 'Scholars', 'About', 'Contact'].map(label => {
                         const path = label.toLowerCase() === 'archive' ? '/' : `/${label.toLowerCase()}`;
                         const isActive = pathname === path;
                         return (
@@ -99,7 +99,7 @@ const Navbar: React.FC<NavbarProps> = ({ isAuthenticated, user }) => {
                             <button onClick={() => setIsMenuOpen(false)} className="p-3 text-white bg-white/10 rounded-full"><X className="w-6 h-6" /></button>
                         </div>
                         <div className="flex flex-col gap-8">
-                            {['Archive', 'Scholars', 'History'].map(label => (
+                            {['Archive', 'Scholars', 'About', 'Contact'].map(label => (
                                 <Link key={label} href={label.toLowerCase() === 'archive' ? '/' : `/${label.toLowerCase()}`} onClick={() => setIsMenuOpen(false)} className="text-3xl font-bold text-white italic text-left">{label}</Link>
                             ))}
                             <div className="h-px bg-white/10 w-full" />

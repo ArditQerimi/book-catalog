@@ -16,16 +16,6 @@ interface ArchiveContainerProps {
 
 const BOOKS_PER_PAGE = 9;
 
-const getCenturyString = (year: number) => {
-    const c = Math.floor(year / 100) + 1;
-    const suffix = (val: number) => {
-        if (val > 3 && val < 21) return 'th';
-        switch (val % 10) {
-            case 1: return "st"; case 2: return "nd"; case 3: return "rd"; default: return "th";
-        }
-    };
-    return `${c}${suffix(c)} Century`;
-};
 
 const ArchiveContainer: React.FC<ArchiveContainerProps> = ({ initialBooks = [] as Book[] }) => {
     const router = useRouter();
@@ -34,10 +24,8 @@ const ArchiveContainer: React.FC<ArchiveContainerProps> = ({ initialBooks = [] a
     const [sortBy, setSortBy] = React.useState<SortOption>('Oldest');
     const [currentPage, setCurrentPage] = React.useState(1);
     const [filters, setFilters] = React.useState<FilterState>({
-        category: 'All',
-        century: 'All',
-        language: 'All',
-        theme: 'All'
+        author: '',
+        maxPages: 1000
     });
     const itemsPerPage = BOOKS_PER_PAGE;
 
@@ -45,37 +33,26 @@ const ArchiveContainer: React.FC<ArchiveContainerProps> = ({ initialBooks = [] a
         setCurrentPage(1);
     }, [filters, searchQuery, sortBy]);
 
-    const filterOptions = React.useMemo(() => {
-        const centuries = new Set<string>();
-        const languages = new Set<string>();
-        const themes = new Set<string>();
-        initialBooks.forEach(book => {
-            centuries.add(getCenturyString(book.year));
-            book.language.split('/').forEach(l => languages.add(l.trim()));
-            book.themes.forEach(t => themes.add(t));
-        });
-        return {
-            centuries: Array.from(centuries).sort((a, b) => parseInt(a) - parseInt(b)),
-            languages: Array.from(languages).sort(),
-            themes: Array.from(themes).sort().slice(0, 15) // Limit to top 15 for UI cleanliness
-        };
-    }, [initialBooks]);
 
     const filteredBooks = React.useMemo(() => {
         let result = initialBooks;
 
-        if (filters.category !== 'All') result = result.filter(b => b.category === filters.category);
-        if (filters.century !== 'All') result = result.filter(b => getCenturyString(b.year) === filters.century);
-        if (filters.language !== 'All') result = result.filter(b => b.language.includes(filters.language));
-        if (filters.theme !== 'All') result = result.filter(b => b.themes.includes(filters.theme));
+        // Filter by Author if set
+        if (filters.author) {
+            result = result.filter(b => b.author.toLowerCase().includes(filters.author!.toLowerCase()));
+        }
 
+        // Filter by Max Pages if set
+        if (filters.maxPages) {
+            result = result.filter(b => b.pages <= filters.maxPages!);
+        }
+
+        // Filter by Search Query (Title only as per user request for "Title, Author, Pages")
+        // Although the user said "filters with title, author...", usually search bar is for title.
+        // I will make the search query filter strictly by Title now.
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
-            result = result.filter(b =>
-                b.title.toLowerCase().includes(q) ||
-                b.author.toLowerCase().includes(q) ||
-                b.description.toLowerCase().includes(q)
-            );
+            result = result.filter(b => b.title.toLowerCase().includes(q));
         }
         return result;
     }, [initialBooks, filters, searchQuery]);
@@ -100,12 +77,12 @@ const ArchiveContainer: React.FC<ArchiveContainerProps> = ({ initialBooks = [] a
     };
 
     const resetFilters = () => {
-        setFilters({ category: 'All', century: 'All', language: 'All', theme: 'All' });
+        setFilters({ author: '', maxPages: 1000 });
         setSearchQuery('');
         setCurrentPage(1);
     };
 
-    const hasActiveFilters = filters.category !== 'All' || filters.century !== 'All' || filters.language !== 'All' || filters.theme !== 'All' || !!searchQuery;
+    const hasActiveFilters = !!filters.author || (filters.maxPages !== 1000) || !!searchQuery;
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -125,9 +102,8 @@ const ArchiveContainer: React.FC<ArchiveContainerProps> = ({ initialBooks = [] a
                 <ArchiveSidebar
                     filters={filters}
                     setFilters={setFilters}
-                    viewMode={viewMode}
-                    setViewMode={setViewMode}
-                    filterOptions={filterOptions}
+                    searchQuery={searchQuery}
+                    setSearchQuery={setSearchQuery}
                 />
 
                 <section className="flex-1">

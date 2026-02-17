@@ -40,15 +40,6 @@ export const scholars = pgTable("scholars", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
-export const historyEvents = pgTable("history_events", {
-  id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
-  title: text("title").notNull(),
-  period: varchar("period", { length: 255 }).notNull(),
-  description: text("description").notNull(),
-  image: text("image"),
-  type: varchar("type", { length: 50 }).notNull(), // 'era', 'event', 'achievement'
-  order: integer("order").notNull().default(0),
-});
 
 export const categories = pgTable("categories", {
   id: varchar("id", { length: 255 }).primaryKey().$defaultFn(() => crypto.randomUUID()),
@@ -78,7 +69,6 @@ export type NewBook = typeof books.$inferInsert;
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
 export type Scholar = typeof scholars.$inferSelect;
-export type HistoryEvent = typeof historyEvents.$inferSelect;
 export type Category = typeof categories.$inferSelect;
 export type AuthorInfo = typeof authorsInfo.$inferSelect;
 export type Language = typeof languages.$inferSelect;

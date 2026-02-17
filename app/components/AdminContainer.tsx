@@ -13,7 +13,11 @@ import {
     deleteBookAction,
     deleteCategoryAction,
     deleteAuthorInfoAction,
-    deleteLanguageAction
+    deleteLanguageAction,
+    updateCategoryAction,
+    updateAuthorInfoAction,
+    updateLanguageAction,
+    uploadImageAction
 } from '@/lib/actions';
 import BookFormModal from './BookFormModal';
 import { useRouter } from 'next/navigation';
@@ -39,6 +43,9 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingBook, setEditingBook] = useState<Book | null>(null);
+    const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+    const [editingAuthor, setEditingAuthor] = useState<AuthorInfo | null>(null);
+    const [editingLanguage, setEditingLanguage] = useState<Language | null>(null);
     const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
     const filteredBooks = initialBooks.filter(b =>
@@ -187,30 +194,46 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
                             e.preventDefault();
                             const form = e.currentTarget;
                             const formData = new FormData(form);
-                            await createCategoryAction(formData);
+                            if (editingCategory) {
+                                await updateCategoryAction(editingCategory.id, formData);
+                                setEditingCategory(null);
+                            } else {
+                                await createCategoryAction(formData);
+                            }
                             form.reset();
                             router.refresh();
                         }} className="mb-10 bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end">
                             <div className="flex-1 space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Category Name</label>
-                                <input name="name" required className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Philosophy..." />
+                                <input name="name" required defaultValue={editingCategory?.name} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Philosophy..." />
                             </div>
                             <div className="flex-[2] space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Description</label>
-                                <input name="description" className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Brief description of the field..." />
+                                <input name="description" defaultValue={editingCategory?.description || ''} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Brief description of the field..." />
                             </div>
-                            <button type="submit" className="bg-emerald-800 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-900 transition-all">Add Category</button>
+                            <div className="flex gap-2">
+                                <button type="submit" className="bg-emerald-800 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-900 transition-all">{editingCategory ? 'Update' : 'Add Category'}</button>
+                                {editingCategory && <button type="button" onClick={() => setEditingCategory(null)} className="bg-white text-emerald-800 border border-emerald-200 px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-50 transition-all">Cancel</button>}
+                            </div>
                         </form>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {initialCategories.map(cat => (
                                 <div key={cat.id} className="p-6 bg-emerald-50/30 rounded-2xl border border-emerald-100 relative group">
-                                    <button
-                                        onClick={() => handleDeleteCategory(cat.id)}
-                                        className="absolute top-4 right-4 p-2 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute top-4 right-4 flex gap-1">
+                                        <button
+                                            onClick={() => setEditingCategory(cat)}
+                                            className="p-2 text-emerald-600 opacity-0 group-hover:opacity-100 hover:text-emerald-800 transition-all"
+                                        >
+                                            <Edit3 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteCategory(cat.id)}
+                                            className="p-2 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                     <h4 className="text-lg font-bold text-emerald-900 mb-2">{cat.name}</h4>
                                     <p className="text-xs text-emerald-700/60 line-clamp-2">{cat.description || 'No description provided.'}</p>
                                 </div>
@@ -222,32 +245,55 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
 
                 {activeTab === 'authors' && (
                     <div className="p-8">
-                        <form onSubmit={async (e) => {
+                        <form key={editingAuthor?.id || 'new'} onSubmit={async (e) => {
                             e.preventDefault();
                             const form = e.currentTarget;
                             const formData = new FormData(form);
-                            await createAuthorInfoAction(formData);
+
+                            // Handling Image Upload if file selected
+                            const fileInput = form.querySelector('input[type="file"]') as HTMLInputElement;
+                            if (fileInput?.files?.[0]) {
+                                const uploadData = new FormData();
+                                uploadData.append('file', fileInput.files[0]);
+                                const uploadResult = await uploadImageAction(uploadData);
+                                if (uploadResult.success && uploadResult.url) {
+                                    formData.set('image', uploadResult.url);
+                                }
+                            } else if (editingAuthor) {
+                                formData.set('image', editingAuthor.image || '');
+                            }
+
+                            if (editingAuthor) {
+                                await updateAuthorInfoAction(editingAuthor.id, formData);
+                                setEditingAuthor(null);
+                            } else {
+                                await createAuthorInfoAction(formData);
+                            }
                             form.reset();
                             router.refresh();
                         }} className="mb-10 bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 grid grid-cols-1 md:grid-cols-3 gap-4 pb-4">
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Author Name</label>
-                                <input name="name" required className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Al-Farabi..." />
+                                <input name="name" required defaultValue={editingAuthor?.name} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Al-Farabi..." />
                             </div>
                             <div className="space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Death Year (CE)</label>
-                                <input name="deathYear" type="number" className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="950" />
+                                <input name="deathYear" type="number" defaultValue={editingAuthor?.deathYear || ''} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="950" />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Image URL</label>
-                                <input name="image" className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="https://..." />
+                                <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Author Image</label>
+                                <div className="relative">
+                                    <input name="image_file" type="file" accept="image/*" className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-xs outline-none focus:ring-2 focus:ring-emerald-100 file:mr-4 file:py-1 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100" />
+                                    <input name="image" type="hidden" />
+                                </div>
                             </div>
                             <div className="md:col-span-2 space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Short Bio</label>
-                                <input name="bio" className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Polymath and philosopher..." />
+                                <input name="bio" defaultValue={editingAuthor?.bio || ''} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Polymath and philosopher..." />
                             </div>
-                            <div className="flex items-end">
-                                <button type="submit" className="w-full bg-emerald-800 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-900 transition-all">Add Author</button>
+                            <div className="flex items-end gap-2">
+                                <button type="submit" className="flex-1 bg-emerald-800 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-900 transition-all">{editingAuthor ? 'Update' : 'Add Author'}</button>
+                                {editingAuthor && <button type="button" onClick={() => setEditingAuthor(null)} className="bg-white text-emerald-800 border border-emerald-200 px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-50 transition-all">Cancel</button>}
                             </div>
                         </form>
 
@@ -262,12 +308,20 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
                                         <p className="text-[10px] text-emerald-600 font-bold uppercase tracking-widest mb-2">{author.deathYear ? `Died ${author.deathYear} CE` : 'Death date unknown'}</p>
                                         <p className="text-xs text-emerald-700/60 line-clamp-2">{author.bio || 'No bio recorded.'}</p>
                                     </div>
-                                    <button
-                                        onClick={() => handleDeleteAuthor(author.id)}
-                                        className="absolute top-4 right-4 p-2 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+                                    <div className="absolute top-4 right-4 flex gap-1">
+                                        <button
+                                            onClick={() => setEditingAuthor(author)}
+                                            className="p-2 text-emerald-600 opacity-0 group-hover:opacity-100 hover:text-emerald-800 transition-all"
+                                        >
+                                            <Edit3 className="w-4 h-4" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteAuthor(author.id)}
+                                            className="p-2 text-red-400 opacity-0 group-hover:opacity-100 hover:text-red-600 transition-all"
+                                        >
+                                            <Trash2 className="w-4 h-4" />
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
@@ -277,23 +331,31 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
 
                 {activeTab === 'languages' && (
                     <div className="p-8">
-                        <form onSubmit={async (e) => {
+                        <form key={editingLanguage?.id || 'new'} onSubmit={async (e) => {
                             e.preventDefault();
                             const form = e.currentTarget;
                             const formData = new FormData(form);
-                            await createLanguageAction(formData);
+                            if (editingLanguage) {
+                                await updateLanguageAction(editingLanguage.id, formData);
+                                setEditingLanguage(null);
+                            } else {
+                                await createLanguageAction(formData);
+                            }
                             form.reset();
                             router.refresh();
                         }} className="mb-10 bg-emerald-50/50 p-6 rounded-3xl border border-emerald-100 flex flex-col md:flex-row gap-4 items-end">
                             <div className="flex-1 space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">Language Name</label>
-                                <input name="name" required className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Arabic..." />
+                                <input name="name" required defaultValue={editingLanguage?.name} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="Arabic..." />
                             </div>
                             <div className="flex-1 space-y-1">
                                 <label className="text-[10px] font-bold text-emerald-800/40 uppercase tracking-widest ml-1">ISO Code</label>
-                                <input name="code" className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="ar" />
+                                <input name="code" defaultValue={editingLanguage?.code || ''} className="w-full bg-white border border-emerald-100 rounded-xl py-2 px-4 text-sm outline-none focus:ring-2 focus:ring-emerald-100" placeholder="ar" />
                             </div>
-                            <button type="submit" className="bg-emerald-800 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-900 transition-all">Add Language</button>
+                            <div className="flex gap-2">
+                                <button type="submit" className="bg-emerald-800 text-white px-6 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-900 transition-all">{editingLanguage ? 'Update' : 'Add Language'}</button>
+                                {editingLanguage && <button type="button" onClick={() => setEditingLanguage(null)} className="bg-white text-emerald-800 border border-emerald-200 px-4 py-2 rounded-xl font-bold text-xs uppercase hover:bg-emerald-50 transition-all">Cancel</button>}
+                            </div>
                         </form>
 
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -303,7 +365,10 @@ const AdminContainer: React.FC<AdminContainerProps> = ({
                                         <p className="text-sm font-bold text-emerald-900">{lang.name}</p>
                                         <p className="text-[10px] text-emerald-400 uppercase font-black">{lang.code}</p>
                                     </div>
-                                    <button onClick={() => handleDeleteLanguage(lang.id)} className="text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
+                                    <div className="flex gap-1">
+                                        <button onClick={() => setEditingLanguage(lang)} className="text-emerald-400 hover:text-emerald-600 opacity-0 group-hover:opacity-100 transition-opacity"><Edit3 className="w-4 h-4" /></button>
+                                        <button onClick={() => handleDeleteLanguage(lang.id)} className="text-red-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><X className="w-4 h-4" /></button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

@@ -32,10 +32,8 @@ export interface SearchResult {
 export type SortOption = 'Oldest' | 'Newest' | 'Title A-Z';
 
 export interface FilterState {
-  category: Category;
-  century: string;
-  language: string;
-  theme: string;
+  author?: string;
+  maxPages?: number;
 }
 
 export type ViewMode = 'grid' | 'list';

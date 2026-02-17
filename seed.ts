@@ -1,5 +1,5 @@
 import { db } from "./lib/db";
-import { scholars, historyEvents, categories, authorsInfo, languages, books } from "./schema";
+import { scholars, categories, authorsInfo, languages, books } from "./schema";
 
 async function seed() {
     console.log("Seeding the legacy...");
@@ -60,26 +60,6 @@ async function seed() {
         }
     ]).onConflictDoNothing();
 
-    // Seed History Events
-    console.log("Chiseling history...");
-    await db.insert(historyEvents).values([
-        {
-            title: "The House of Wisdom (Bayt al-Hikmah)",
-            period: "8th–13th Century",
-            description: "Founded in Baghdad by Harun al-Rashid, this center of learning hosted the Translation Movement, where major Greek and Indian texts were preserved in Arabic.",
-            image: "https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&q=80&w=800",
-            type: "achievement",
-            order: 1,
-        },
-        {
-            title: "The Golden Age of Al-Andalus",
-            period: "711–1492 CE",
-            description: "A period of unparalleled cultural and scientific flourishing in Islamic Iberia, where scholars of different faiths collaborated in centers like Cordoba and Granada.",
-            image: "https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=800",
-            type: "era",
-            order: 2,
-        }
-    ]).onConflictDoNothing();
 
     // Seed Books
     console.log("Enshrining manuscripts...");

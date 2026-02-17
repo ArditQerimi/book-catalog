@@ -40,7 +40,7 @@ const BookListRow: React.FC<BookListRowProps> = ({ book }: { book: Book }) => {
       <div className="hidden md:flex items-center gap-8 shrink-0 text-emerald-800/40">
         <div className="flex flex-col items-end">
           <span className="text-[9px] uppercase font-bold tracking-widest">Est. Value</span>
-          <span className="text-sm font-bold text-emerald-900">£{Number(book.price).toFixed(2)}</span>
+          <span className="text-sm font-bold text-emerald-900">€{Number(book.price).toFixed(2)}</span>
         </div>
         <div className="flex items-center gap-1.5">
           <Globe className="w-3.5 h-3.5" />

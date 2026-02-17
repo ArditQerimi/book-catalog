@@ -36,7 +36,7 @@ const BookCard: React.FC<BookCardProps> = ({ book }) => {
             <span className="text-xs text-emerald-900 font-bold">{book.year} CE</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-lg font-bold text-emerald-900 italic">£{Number(book.price).toFixed(2)}</span>
+            <span className="text-lg font-bold text-emerald-900 italic">€{Number(book.price).toFixed(2)}</span>
           </div>
         </div>
       </div>

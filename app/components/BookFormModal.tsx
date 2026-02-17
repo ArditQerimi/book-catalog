@@ -58,7 +58,7 @@ const BookFormModal: React.FC<BookFormModalProps> = ({
 
         let imageUrl = preview;
 
-        // Upload to Cloudinary if a new file was selected
+        // Upload to Supabase Storage if a new file was selected
         if (selectedFile) {
             const uploadFormData = new FormData();
             uploadFormData.append('file', selectedFile);
@@ -68,12 +68,12 @@ const BookFormModal: React.FC<BookFormModalProps> = ({
                 if (uploadResult.success && uploadResult.url) {
                     imageUrl = uploadResult.url;
                 } else {
-                    console.error(uploadResult.error || "Failed to upload image to the celestial cloud.");
-                    alert("Celestial cloud upload failed. We will proceed with the current manuscript details, but the image may not be updated.");
+                    console.error(uploadResult.error || "Failed to upload image to the digital vault.");
+                    alert("Digital vault upload failed. We will proceed with the current manuscript details, but the cover image may not be updated.");
                 }
             } catch (err) {
-                console.error("Cloudinary upload catch error:", err);
-                alert("An error occurred during celestial cloud upload. Proceeding without updating the image.");
+                console.error("Supabase storage upload catch error:", err);
+                alert("An error occurred during vault upload. Proceeding without updating the image.");
             }
         }
 
